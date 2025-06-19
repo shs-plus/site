@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英语单词测试系统</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.7;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .mode-selector {
+            margin-bottom: 20px;
+        }
+        .word-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .word-info {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #1976D2; /* 主色调蓝色 */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #1565C0; /* 悬停深蓝色 */
+        }
+        input[type="text"] {
+            padding: 8px;
+            width: 200px;
+            margin-right: 10px;
+        }
+        .correct {
+            color: #1976D2; /* 正确蓝色 */
+            font-weight: bold;
+        }
+        .incorrect {
+            color: #D32F2F; /* 错误红色 */
+            font-weight: bold;
+        }
+        .result-summary {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #1976D2; /* 结果蓝色 */
+        }
+        .word-list {
+            margin-top: 20px;
+        }
+        .word-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        .word {
+            width: 200px;
+            font-weight: bold;
+        }
+        .meaning {
+            flex-grow: 1;
+        }
+        .explanation-btn {
+            background-color: #0288D1; /* 解析按钮浅蓝色 */
+            margin-right: 0;
+        }
+        .field-label {
+            font-weight: bold;
+        }
+        @media (max-width:700px) {
+            .word-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .word {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>英语单词测试系统</h1>
+        
+        <div class="mode-selector">
+            <button id="testMode">测试模式</button>
+            <button id="reviewMode">复习模式</button>
+        </div>
+        
+        <div id="testContainer" style="display: none;">
+            <div id="testContent"></div>
+            <div style="margin-top:10px;">
+                <button id="finishTestBtn" style="background:#f57c00;display:none;">完成测试并查看结果</button>
+            </div>
+            <div class="result-summary" id="resultSummary"></div>
+            <div id="wrongWords" class="word-list"></div>
+        </div>
+        
+        <div id="reviewContainer" style="display: none;">
+            <div id="reviewContent" class="word-list"></div>
+        </div>
+    </div>
+
+    <script>
+        // 完整单词数据（每个都补了synonym和usage）
+        const words = [
+            { id: 1, word: "academic", meaning: "adj.学术的", explanation: "学术的，学院的；纯理论的", synonym: "scholarly, educational", usage: "He has an academic background in physics." },
+            { id: 2, word: "coordination", meaning: "n.协调", explanation: "协调，配合；协调动作的能力", synonym: "collaboration, cooperation", usage: "Coordination between team members is essential." },
+            { id: 3, word: "career", meaning: "n.职业", explanation: "职业，事业；生涯，经历", synonym: "profession, occupation, job", usage: "She wants a career in medicine." },
+            { id: 4, word: "consumer", meaning: "n.消费者", explanation: "消费者，顾客；使用者", synonym: "buyer, purchaser, customer", usage: "Consumers are demanding more eco-friendly products." },
+            { id: 5, word: "charge", meaning: "v.收费", explanation: "收费，要价；指控；充电", synonym: "ask, demand, accuse", usage: "The shop charges \$10 for delivery." },
+            { id: 6, word: "display", meaning: "n.展示", explanation: "展示，陈列；显示", synonym: "exhibit, show, present", usage: "The exhibition displays modern art." },
+            { id: 7, word: "delay", meaning: "v.延迟", explanation: "延迟，推迟；耽搁", synonym: "postpone, defer, put off", usage: "The flight was delayed due to bad weather." },
+            { id: 8, word: "diverse", meaning: "adj.多样的", explanation: "不同的，多种多样的", synonym: "varied, different, diverse", usage: "Students come from diverse backgrounds." },
+            { id: 9, word: "effectiveness", meaning: "n.效果", explanation: "有效性，效果", synonym: "efficacy, efficiency", usage: "We must evaluate the effectiveness of our strategy." },
+            { id: 10, word: "expand", meaning: "v.扩展", explanation: "扩大，扩展；膨胀", synonym: "enlarge, extend, increase", usage: "The company plans to expand its operations." },
+            { id: 11, word: "entire", meaning: "adj.全部的", explanation: "全部的，整个的", synonym: "whole, complete", usage: "She ate the entire cake." },
+            { id: 12, word: "ensure", meaning: "v.确保", explanation: "确保，保证；使安全", synonym: "make sure, guarantee", usage: "Please ensure the door is locked." },
+            { id: 13, word: "feedback", meaning: "n.反馈", explanation: "反馈，反应；回复", synonym: "response, comment, reaction", usage: "We welcome your feedback on our products." },
+            { id: 14, word: "initially", meaning: "adv.最初", explanation: "最初，起初", synonym: "at first, in the beginning", usage: "Initially, I knew very little about computers." },
+            { id: 15, word: "impressive", meaning: "adj.印象深刻的", explanation: "给人深刻印象的，感人的", synonym: "remarkable, striking, notable", usage: "Her performance was truly impressive." },
+            { id: 16, word: "ingredient", meaning: "n.成分", explanation: "成分，原料；要素", synonym: "component, element, constituent", usage: "Salt is an essential ingredient in this recipe." },
+            { id: 17, word: "innovation", meaning: "n.创新", explanation: "创新，革新；新方法", synonym: "novelty, creativity", usage: "Innovation drives economic progress." },
+            { id: 18, word: "management", meaning: "n.管理", explanation: "管理，经营；管理人员", synonym: "administration, supervision", usage: "He studies business management." },
+            { id: 19, word: "operate", meaning: "v.操作", explanation: "操作，运转；经营；动手术", synonym: "run, control, manage", usage: "They operate a small café downtown." },
+            { id: 20, word: "pure", meaning: "adj.纯的", explanation: "纯的，纯粹的；纯净的", synonym: "unmixed, clean", usage: "This ring is made of pure gold." },
+            { id: 21, word: "remote", meaning: "adj.偏远的", explanation: "遥远的，偏远的；远程的", synonym: "distant, far, isolated", usage: "He lives in a remote village." },
+            { id: 22, word: "reality", meaning: "n.现实", explanation: "现实，实际；真实", synonym: "actuality, truth, fact", usage: "Face reality and accept the facts." },
+            { id: 23, word: "substance", meaning: "n.物质", explanation: "物质，材料；实质", synonym: "material, matter", usage: "Water is a transparent substance." },
+            { id: 24, word: "tax", meaning: "n.税收", explanation: "税，税款；负担", synonym: "duty, levy", usage: "You must pay the tax on time." },
+            { id: 25, word: "thoughtful", meaning: "adj.周到的", explanation: "深思的，体贴的；周到的", synonym: "considerate, caring", usage: "Thank you for your thoughtful gift." },
+            { id: 26, word: "version", meaning: "n.版本", explanation: "版本，说法；译文", synonym: "edition, form", usage: "This is the latest version of the software." },
+            { id: 27, word: "visual", meaning: "adj.视觉的", explanation: "视觉的，视力的；看得见的", synonym: "optical, visible", usage: "The presentation included visual aids." }
+        ];
+
+        function shuffleWords() {
+            for (let i = words.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [words[i], words[j]] = [words[j], words[i]];
+            }
+            return words;
+        }
+
+        // 测试模式
+        document.getElementById('testMode').addEventListener('click', function() {
+            document.getElementById('testContainer').style.display = 'block';
+            document.getElementById('reviewContainer').style.display = 'none';
+            
+            const testContent = document.getElementById('testContent');
+            testContent.innerHTML = '';
+
+            const shuffledWords = shuffleWords();
+            window.wrongWordsList = [];
+            
+            shuffledWords.forEach((word, index) => {
+                const wordCard = document.createElement('div');
+                wordCard.className = 'word-card';
+                wordCard.innerHTML = `
+                    <div>${index + 1}. ${word.meaning}</div>
+                    <input type="text" id="answer-${word.id}" placeholder="请输入英文单词" onkeydown="if(event.key==='Enter'){checkAnswer(${word.id}, this.nextElementSibling);}">
+                    <button onclick="checkAnswer(${word.id}, this)">提交</button>
+                    <button class="explanation-btn" onclick="toggleExplanation(${word.id}, this)">显示解析</button>
+                    <div class="word-info" id="info-${word.id}" style="display:none;">
+                        <p><span class="field-label">词语解析：</span>${word.explanation}</p>
+                        <p><span class="field-label">近义词：</span>${word.synonym ? word.synonym : '（无）'}</p>
+                        <p><span class="field-label">用法：</span>${word.usage ? word.usage : '（无）'}</p>
+                    </div>
+                    <div id="result-${word.id}"></div>
+                `;
+                wordCard.dataset.correctAnswer = word.word.toLowerCase();
+                testContent.appendChild(wordCard);
+            });
+
+            // 完成按钮显示
+            document.getElementById('finishTestBtn').style.display = 'inline-block';
+            document.getElementById('finishTestBtn').onclick = finishTest;
+
+            document.getElementById('resultSummary').innerHTML = '';
+            document.getElementById('wrongWords').innerHTML = '';
+            window.checkedIds = new Set(); // 记录已提交的题
+        });
+
+        // 检查答案
+        function checkAnswer(wordId, btn) {
+            const answerInput = document.getElementById(`answer-${wordId}`);
+            const resultDiv = document.getElementById(`result-${wordId}`);
+            const correctAnswer = answerInput.parentElement.dataset.correctAnswer;
+            const userAnswer = answerInput.value.trim().toLowerCase();
+
+            if(window.checkedIds) window.checkedIds.add(wordId);
+
+            if (userAnswer === correctAnswer) {
+                resultDiv.innerHTML = '<span class="correct">正确</span>';
+            } else {
+                resultDiv.innerHTML = `<span class="incorrect">错误</span> 正确答案: ${correctAnswer}`;
+                // 记录错误单词
+                const word = words.find(w => w.id === wordId);
+                if (!window.wrongWordsList) window.wrongWordsList = [];
+                if (!window.wrongWordsList.some(w => w.id === wordId)) {
+                    window.wrongWordsList.push(word);
+                }
+            }
+        }
+
+        // 显示或收起解析通用（测试/复习）
+        function toggleExplanation(wordId, btn) {
+            const infoDiv = document.getElementById(`info-${wordId}`);
+            if (infoDiv.style.display === 'none' || infoDiv.style.display === '') {
+                infoDiv.style.display = 'block';
+                btn.textContent = '收起解析';
+            } else {
+                infoDiv.style.display = 'none';
+                btn.textContent = '显示解析';
+            }
+        }
+
+        // 复习模式
+        document.getElementById('reviewMode').addEventListener('click', function() {
+            document.getElementById('testContainer').style.display = 'none';
+            document.getElementById('reviewContainer').style.display = 'block';
+
+            const reviewContent = document.getElementById('reviewContent');
+            reviewContent.innerHTML = '';
+            
+            words.forEach(word => {
+                const wordItem = document.createElement('div');
+                wordItem.className = 'word-item';
+                wordItem.innerHTML = `
+                    <div class="word">${word.word}</div>
+                    <div class="meaning">${word.meaning}</div>
+                    <button class="explanation-btn" onclick="toggleReviewExplanation(${word.id}, this)">显示解析</button>
+                    <div class="word-info" id="review-info-${word.id}" style="display:none;">
+                        <p><span class="field-label">词语解析：</span>${word.explanation}</p>
+                        <p><span class="field-label">近义词：</span>${word.synonym ? word.synonym : '（无）'}</p>
+                        <p><span class="field-label">用法：</span>${word.usage ? word.usage : '（无）'}</p>
+                    </div>
+                `;
+                reviewContent.appendChild(wordItem);
+            });
+        });
+        function toggleReviewExplanation(wordId, btn) {
+            const infoDiv = document.getElementById(`review-info-${wordId}`);
+            if (infoDiv.style.display === 'none' || infoDiv.style.display === '') {
+                infoDiv.style.display = 'block';
+                btn.textContent = '收起解析';
+            } else {
+                infoDiv.style.display = 'none';
+                btn.textContent = '显示解析';
+            }
+        }
+
+        // 完成测试并统计错误
+        function finishTest() {
+            const total = words.length;
+            let correct = 0;
+            let wrongWords = [];
+            words.forEach(word => {
+                const answerInput = document.getElementById(`answer-${word.id}`);
+                const resultDiv = document.getElementById(`result-${word.id}`);
+                const correctAnswer = word.word.toLowerCase();
+                const userAnswer = answerInput ? answerInput.value.trim().toLowerCase() : '';
+                if (userAnswer === correctAnswer) {
+                    correct++;
+                    resultDiv.innerHTML = '<span class="correct">正确</span>';
+                } else {
+                    resultDiv.innerHTML = `<span class="incorrect">错误</span> 正确答案: ${correctAnswer}`;
+                    wrongWords.push(word);
+                }
+            });
+            const resultSummary = document.getElementById('resultSummary');
+            const wrongWordsDiv = document.getElementById('wrongWords');
+            if (wrongWords.length > 0) {
+                resultSummary.innerHTML = `测试完成，<span style="color:green">正确: ${correct}</span> ，<span style="color:red">错误: ${wrongWords.length}</span>`;
+                wrongWordsDiv.innerHTML = '<h3>错误的单词:</h3>';
+                wrongWords.forEach(word => {
+                    const wordItem = document.createElement('div');
+                    wordItem.className = 'word-item';
+                    wordItem.innerHTML = `
+                        <div class="word">${word.word}</div>
+                        <div class="meaning">${word.meaning}</div>
+                    `;
+                    wrongWordsDiv.appendChild(wordItem);
+                });
+            } else {
+                resultSummary.innerHTML = '测试完成。全部正确，太棒了！';
+                wrongWordsDiv.innerHTML = '全部答对了，太棒了!';
+            }
+        }
+    </script>
+</body>
+</html>
