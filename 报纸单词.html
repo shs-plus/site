@@ -98,7 +98,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>英语单词测试系统</h1>
+        <h1>英语单词测试系统 v1.1 (hha)</h1>
         
         <div class="mode-selector">
             <button id="testMode">测试模式</button>
@@ -148,7 +148,8 @@
             { id: 24, word: "tax", meaning: "n.税收", explanation: "税，税款；负担", synonym: "duty, levy", usage: "You must pay the tax on time." },
             { id: 25, word: "thoughtful", meaning: "adj.周到的", explanation: "深思的，体贴的；周到的", synonym: "considerate, caring", usage: "Thank you for your thoughtful gift." },
             { id: 26, word: "version", meaning: "n.版本", explanation: "版本，说法；译文", synonym: "edition, form", usage: "This is the latest version of the software." },
-            { id: 27, word: "visual", meaning: "adj.视觉的", explanation: "视觉的，视力的；看得见的", synonym: "optical, visible", usage: "The presentation included visual aids." }
+            { id: 27, word: "visual", meaning: "adj.视觉的", explanation: "视觉的，视力的；看得见的", synonym: "optical, visible", usage: "The presentation included visual aids." }, 
+            { id: 28, word: "???", meaning: "adj.好好啊", explanation: "你是个好人，但我们不合适", synonym: "???", usage: "好好啊，好好得好好啊，好好得好好得好好啊" },
         ];
 
         function shuffleWords() {
@@ -208,9 +209,9 @@
             if(window.checkedIds) window.checkedIds.add(wordId);
 
             if (userAnswer === correctAnswer) {
-                resultDiv.innerHTML = '<span class="correct">正确</span>';
+                resultDiv.innerHTML = '<span class="correct">好好啊</span>';
             } else {
-                resultDiv.innerHTML = `<span class="incorrect">错误</span> 正确答案: ${correctAnswer}`;
+                resultDiv.innerHTML = `<span class="incorrect">不好好啊</span> 好好的应该是: ${correctAnswer}`;
                 // 记录错误单词
                 const word = words.find(w => w.id === wordId);
                 if (!window.wrongWordsList) window.wrongWordsList = [];
@@ -279,17 +280,17 @@
                 const userAnswer = answerInput ? answerInput.value.trim().toLowerCase() : '';
                 if (userAnswer === correctAnswer) {
                     correct++;
-                    resultDiv.innerHTML = '<span class="correct">正确</span>';
+                    resultDiv.innerHTML = '<span class="correct">好好啊</span>';
                 } else {
-                    resultDiv.innerHTML = `<span class="incorrect">错误</span> 正确答案: ${correctAnswer}`;
+                    resultDiv.innerHTML = `<span class="incorrect">不好好啊</span> 好好的应该是: ${correctAnswer}`;
                     wrongWords.push(word);
                 }
             });
             const resultSummary = document.getElementById('resultSummary');
             const wrongWordsDiv = document.getElementById('wrongWords');
             if (wrongWords.length > 0) {
-                resultSummary.innerHTML = `测试完成，<span style="color:green">正确: ${correct}</span> ，<span style="color:red">错误: ${wrongWords.length}</span>`;
-                wrongWordsDiv.innerHTML = '<h3>错误的单词:</h3>';
+                resultSummary.innerHTML = `测试完成，<span style="color:green">好好的: ${correct}</span> ，<span style="color:red">不好好的: ${wrongWords.length}</span>`;
+                wrongWordsDiv.innerHTML = '<h3>不好好的单词:</h3>';
                 wrongWords.forEach(word => {
                     const wordItem = document.createElement('div');
                     wordItem.className = 'word-item';
@@ -300,8 +301,8 @@
                     wrongWordsDiv.appendChild(wordItem);
                 });
             } else {
-                resultSummary.innerHTML = '测试完成。全部正确，太棒了！';
-                wrongWordsDiv.innerHTML = '全部答对了，太棒了!';
+                resultSummary.innerHTML = '答得好~~好~~啊~~~';
+                wrongWordsDiv.innerHTML = '';
             }
         }
     </script>
